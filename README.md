@@ -1,5 +1,5 @@
 # CareOps Guardian
-
+App Link : https://careops-guardian-8q6qnvzszosdaknjctxudc.streamlit.app/
 CareOps Guardian is an AI assistant for domiciliary care managers. It ingests synthetic but realistic care plans, risk assessments, and incident logs, then combines retrieval-augmented generation (RAG) with domain rules to answer questions, flag risks, and produce QA-style reports.
 
 ## Why this project exists
