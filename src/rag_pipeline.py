@@ -70,7 +70,7 @@ def get_retriever_for_service_user(service_user_id: str):
     retriever = vector_store.as_retriever(
         search_kwargs={
             "k": 6,
-            "filter": {"service_user_id": service_user_id.upper()},
+            "filter": {"service_user_id": {"$eq": service_user_id.upper()}},
         }
     )
     return retriever
