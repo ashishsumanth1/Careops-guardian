@@ -8,6 +8,7 @@ from typing import Dict, List
 import streamlit as st
 from dotenv import load_dotenv
 
+from src.build_vector_store import build_vector_store
 from src.config import CARE_PLANS_DIR, CHROMA_DIR, INCIDENTS_CSV
 from src.guardian import generate_guardian_report
 from src.incidents import load_incidents
@@ -81,6 +82,21 @@ def _vector_store_ready() -> bool:
         return False
 
 
+def _ensure_vector_store() -> bool:
+    if _vector_store_ready():
+        return True
+    if not os.environ.get("OPENAI_API_KEY"):
+        st.sidebar.error("OPENAI_API_KEY missing; cannot build vector store.")
+        return False
+    try:
+        with st.spinner("Building vector store (one-off)..."):
+            build_vector_store(CHROMA_DIR)
+    except Exception as exc:  # pragma: no cover - safety
+        st.sidebar.error(f"Vector store build failed: {exc}")
+        return False
+    return True
+
+
 service_users = get_service_user_ids()
 incident_records = get_incident_records()
 
@@ -91,11 +107,15 @@ st.sidebar.metric("Incidents", len(incident_records) or "–")
 if not os.environ.get("OPENAI_API_KEY"):
     st.sidebar.error("OPENAI_API_KEY not found in environment.")
 
-if not _vector_store_ready():
-    st.sidebar.warning("Vector store missing. Run `python -m src.build_vector_store`." )
+vector_store_ready = _ensure_vector_store()
+if not vector_store_ready:
+    st.sidebar.warning("Vector store unavailable. Add OPENAI_API_KEY or pre-build locally.")
 
 st.title("CareOps Guardian UI")
 st.caption("Prototype console-to-UI bridge for care queries, rule insights, and QA reports.")
+
+if not vector_store_ready:
+    st.warning("Vector store unavailable, so RAG-powered features are disabled until embeddings exist.")
 
 care_tab, incident_tab, rules_tab = st.tabs(
     ["Care Q&A", "Incident QA", "Risk Rules"]
@@ -104,7 +124,9 @@ care_tab, incident_tab, rules_tab = st.tabs(
 with care_tab:
     st.subheader("Ask about a service user")
 
-    if not service_users:
+    if not vector_store_ready:
+        st.info("Build the vector store or provide OPENAI_API_KEY to enable care queries.")
+    elif not service_users:
         st.info("No care plans found under data/care_plans. Generate data first.")
     else:
         selected_user = st.selectbox(
@@ -147,7 +169,9 @@ with care_tab:
 with incident_tab:
     st.subheader("Generate an incident QA report")
 
-    if not incident_records:
+    if not vector_store_ready:
+        st.info("Build the vector store or provide OPENAI_API_KEY to enable Guardian reports.")
+    elif not incident_records:
         st.info("No incidents found. Generate dataset first.")
     else:
         selected_incident = st.selectbox(
