@@ -20,3 +20,4 @@ api_key.txt
 
 # Streamlit state
 .streamlit/
+!/.streamlit/secrets.example.toml

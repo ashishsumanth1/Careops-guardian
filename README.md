@@ -101,6 +101,21 @@ On December 10, 2024 ... pressure area redness observed ...
 ...
 ```
 
+## Deploy to Streamlit Community Cloud
+
+1. Push this repo to GitHub (done already) and sign in at [share.streamlit.io](https://share.streamlit.io/).
+2. Click **New app**, pick `ashishsumanth1/Careops-guardian`, choose `main` and set the entry point to `streamlit_app.py`.
+3. In the *Advanced settings → Secrets* panel, add:
+	```toml
+	OPENAI_API_KEY = "sk-..."
+	```
+	(For local testing you can copy `.streamlit/secrets.example.toml` to `.streamlit/secrets.toml`, but never commit the real key.)
+4. Deploy. Streamlit builds the app, installs `requirements.txt`, and exposes a public HTTPS link you can share from your portfolio/README.
+
+If the app warns that the vector store is missing you have two options:
+- Run `python -m src.build_vector_store` locally and commit the resulting `.chroma_db/` folder (remove it from `.gitignore` temporarily so it ships with the repo).
+- Or, modify `streamlit_app.py` to call the builder automatically in Cloud (e.g. run `src.build_vector_store` if the folder is empty) before serving requests.
+
 ## Roadmap
 
 1. **UI Prototype:** Build a lightweight Streamlit or console UI to browse service users, run care queries, and display incident QA reports.
