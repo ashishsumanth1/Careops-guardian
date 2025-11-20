@@ -3,10 +3,16 @@
 from __future__ import annotations
 
 import os
+import sys
+from pathlib import Path
 from typing import Dict, List
 
 import streamlit as st
 from dotenv import load_dotenv
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.build_vector_store import build_vector_store
 from src.config import CARE_PLANS_DIR, CHROMA_DIR, INCIDENTS_CSV
